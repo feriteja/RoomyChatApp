@@ -146,13 +146,16 @@ const InputSection = ({idRoom}: {idRoom: string}) => {
 const chat: React.FC<props> = ({route}: any) => {
   const navigation = useNavigation();
 
+  const transRef = useRef<TransitioningView>();
+
   const {item: items, index: indexParams}: props = route.params;
 
   const {data: roomInfo} = useSWR([items.idRoom, 'roomInfo'], key =>
-    New_getRoomHeadInfo(key),
+    getRoomHeadInfo({idRoom: key}),
   );
-  const {data: dataChat} = useSWR([items.idRoom, 'chatMessage'], key =>
-    New_getChatMessages(key),
+  const {data: dataChat, mutate: mutateDataChat} = useSWR(
+    [items.idRoom, 'chatMessage'],
+    key => getChatMessages({idRoom: key}),
   );
 
   const [messages, setMessages] = useState(dataChat);
@@ -174,18 +177,19 @@ const chat: React.FC<props> = ({route}: any) => {
         });
 
         setMessages(users);
-        // transRef.current?.animateNextTransition();
+        mutateDataChat(users);
+        transRef.current?.animateNextTransition();
       });
 
     return () => subscribe();
   }, []);
 
   const transition = (
-    <Transition.Together>
-      <Transition.In type="scale" />
+    <Transition.Sequence>
       <Transition.Change interpolation="easeInOut" />
+      <Transition.In type="scale" />
       <Transition.Out type="fade" />
-    </Transition.Together>
+    </Transition.Sequence>
   );
 
   return (
@@ -207,7 +211,10 @@ const chat: React.FC<props> = ({route}: any) => {
           </TouchableOpacity>
         </View>
       </View>
-      <View style={styles.content}>
+      <Transitioning.View
+        transition={transition}
+        ref={transRef}
+        style={styles.content}>
         <FlatList
           data={messages}
           extraData={messages}
@@ -234,7 +241,7 @@ const chat: React.FC<props> = ({route}: any) => {
           )}
         />
         <InputSection idRoom={items.idRoom} />
-      </View>
+      </Transitioning.View>
     </View>
   );
 };

@@ -75,7 +75,7 @@ const roomOption = ({route}: {route: any}) => {
         </View>
         <View style={styles.sectionDetail}>
           <RoomBannedList
-            containerRef={transRef.current}
+            containerRef={transRef}
             admin={item?.admin === myUid()}
             idRoom={item?.idRoom}
           />

@@ -31,6 +31,7 @@ const index: React.FC<props> = ({item, index}) => {
 
   useEffect(() => {
     getRoomHeadInfo({idRoom: item.idRoom}).then(info => {
+      // console.log(info);
       info?.lastMessage.onSnapshot(query => {
         getProfileInfo({uid: query?.docs[0]?.data()?.uidUser}).then(a =>
           setLastMessage({...query?.docs[0]?.data(), from: a?.name}),

@@ -26,56 +26,43 @@ const roomRequested: React.FC<props> = ({
 }) => {
   const {data: userInfo} = useSWR(uidUser, key => getProfileInfo({uid: key}));
 
-  const transition = (
-    <Transition.Sequence>
-      <Transition.Out type="scale" />
-      <Transition.Change interpolation="easeInOut" />
-      <Transition.In type="fade" />
-    </Transition.Sequence>
-  );
-
-  const ref = useRef<TransitioningView>(null);
-
   return (
-    <Transitioning.View ref={ref} transition={transition}>
-      <View style={[styles.container]}>
-        <View style={styles.section1}>
-          <Image source={{uri: userInfo?.photoURL}} style={styles.imageAva} />
-          <View
-            style={{
-              marginLeft: 20,
-              alignSelf: 'stretch',
-              justifyContent: 'space-around',
-              paddingVertical: 15,
-            }}>
-            <Text
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              style={{fontWeight: 'bold', fontSize: 16}}>
-              {userInfo?.name || ''}
-            </Text>
-            <Text>{userInfo?.signature || 'none'}</Text>
-          </View>
+    <View style={[styles.container]}>
+      <View style={styles.section1}>
+        <Image source={{uri: userInfo?.photoURL}} style={styles.imageAva} />
+        <View
+          style={{
+            marginLeft: 20,
+            alignSelf: 'stretch',
+            justifyContent: 'space-around',
+            paddingVertical: 15,
+          }}>
+          <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            style={{fontWeight: 'bold', fontSize: 16}}>
+            {userInfo?.name || ''}
+          </Text>
+          <Text>{userInfo?.signature || 'none'}</Text>
         </View>
-        {admin && (
-          <View style={styles.section2}>
-            <TouchableOpacity onPress={() => acceptHander(uidUser)}>
-              <View
-                style={[styles.section2Action, {backgroundColor: '#5cd85c'}]}>
-                <IconEntypo name="check" size={15} />
-                <Text style={{fontSize: 12}}>Accept</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => rejectHandler(uidUser)}>
-              <View style={[styles.section2Action, {backgroundColor: '#ccc'}]}>
-                <IconFeather name="delete" size={15} />
-                <Text style={{fontSize: 12}}>remove</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        )}
       </View>
-    </Transitioning.View>
+      {admin && (
+        <View style={styles.section2}>
+          <TouchableOpacity onPress={() => acceptHander(uidUser)}>
+            <View style={[styles.section2Action, {backgroundColor: '#5cd85c'}]}>
+              <IconEntypo name="check" size={15} />
+              <Text style={{fontSize: 12}}>Accept</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => rejectHandler(uidUser)}>
+            <View style={[styles.section2Action, {backgroundColor: '#ccc'}]}>
+              <IconFeather name="delete" size={15} />
+              <Text style={{fontSize: 12}}>remove</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
   );
 };
 

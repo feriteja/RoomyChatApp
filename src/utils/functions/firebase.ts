@@ -433,20 +433,6 @@ const getRoomHeadInfo = async ({idRoom}: {idRoom: string}) => {
   } catch (error) {}
 };
 
-const New_getRoomHeadInfo = async (idRoom: string) => {
-  try {
-    const roomInfo = await fireStore().collection('rooms').doc(idRoom).get();
-    const lastMessage = await fireStore()
-      .collection('rooms')
-      .doc(idRoom)
-      .collection('chat')
-      .orderBy('time', 'desc')
-      .limit(1);
-
-    return {lastMessage, roomInfo: roomInfo.data()};
-  } catch (error) {}
-};
-
 const getChatMessages = ({
   idRoom,
   limit = 20,
@@ -885,7 +871,6 @@ export {
   deleteFriend,
   createRoomChat,
   getRoomHeadInfo,
-  New_getRoomHeadInfo,
   getChatMessages,
   New_getChatMessages,
   sendMessage,

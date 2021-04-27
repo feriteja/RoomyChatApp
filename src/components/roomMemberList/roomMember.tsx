@@ -31,59 +31,45 @@ interface props {
 const {height, width} = Dimensions.get('screen');
 
 const roomMember: React.FC<props> = ({uidUser, admin, removeUserHandler}) => {
-  const {data: profilInfo} = useSWR(uidUser, key => getProfileInfo({uid: key}));
-
-  const [userInfo, setUserInfo] = useState(profilInfo);
-
-  const transition = (
-    <Transition.Sequence>
-      <Transition.Out type="scale" />
-      <Transition.Change interpolation="easeInOut" />
-      <Transition.In type="fade" />
-    </Transition.Sequence>
-  );
-
-  const ref = useRef<TransitioningView>(null);
+  const {data: userInfo} = useSWR(uidUser, key => getProfileInfo({uid: key}));
 
   return (
-    <Transitioning.View ref={ref} transition={transition}>
-      <Animated.View style={[styles.container]}>
-        <View style={styles.section1}>
-          <Image source={{uri: userInfo?.photoURL}} style={styles.imageAva} />
-          <View
-            style={{
-              marginLeft: 20,
-              alignSelf: 'stretch',
-              justifyContent: 'space-around',
-              paddingVertical: 15,
-            }}>
-            <Text
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              style={{fontWeight: 'bold', fontSize: 16}}>
-              {userInfo?.name || ''}
-            </Text>
-            <Text>{userInfo?.signature || 'none'}</Text>
-          </View>
+    <Animated.View style={[styles.container]}>
+      <View style={styles.section1}>
+        <Image source={{uri: userInfo?.photoURL}} style={styles.imageAva} />
+        <View
+          style={{
+            marginLeft: 20,
+            alignSelf: 'stretch',
+            justifyContent: 'space-around',
+            paddingVertical: 15,
+          }}>
+          <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            style={{fontWeight: 'bold', fontSize: 16}}>
+            {userInfo?.name || ''}
+          </Text>
+          <Text>{userInfo?.signature || 'none'}</Text>
         </View>
-        {admin && (
-          <View style={styles.section2}>
-            <TouchableOpacity onPress={() => removeUserHandler(uidUser)}>
-              <View style={styles.section2Action}>
-                <IconFeather name="delete" size={15} />
-                <Text style={{fontSize: 12}}>Remove</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <View style={[styles.section2Action, {backgroundColor: '#ccc'}]}>
-                <IconFa5 name="ban" size={15} />
-                <Text style={{fontSize: 12}}>Ban user</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        )}
-      </Animated.View>
-    </Transitioning.View>
+      </View>
+      {admin && (
+        <View style={styles.section2}>
+          <TouchableOpacity onPress={() => removeUserHandler(uidUser)}>
+            <View style={styles.section2Action}>
+              <IconFeather name="delete" size={15} />
+              <Text style={{fontSize: 12}}>Remove</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <View style={[styles.section2Action, {backgroundColor: '#ccc'}]}>
+              <IconFa5 name="ban" size={15} />
+              <Text style={{fontSize: 12}}>Ban user</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
+    </Animated.View>
   );
 };
 

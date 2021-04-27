@@ -4,7 +4,7 @@ import {listMemberRoom} from '@firebaseFunc';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 import RoomMember from './roomMember';
 import {roomActionBan, roomActionRemove} from '@firebaseFunc';
-import useSWR from 'swr';
+import useSWR, {mutate} from 'swr';
 import {TransitioningView} from 'react-native-reanimated';
 
 interface props {
@@ -14,25 +14,25 @@ interface props {
 }
 
 const roomMemberList: React.FC<props> = ({idRoom, admin, containerRef}) => {
-  const {data: cacheListMember} = useSWR([idRoom, 'listMember'], key =>
-    listMemberRoom({idRoom: key}),
+  const {data: cacheListMember, mutate: mutateMemberList} = useSWR(
+    [idRoom, 'listMember'],
+    key => listMemberRoom({idRoom: key}),
   );
 
-  const [listMember, setListMember] = useState(cacheListMember);
-
   const removeUserHandler = (targetUid: string) => {
-    roomActionRemove({idRoom, targetUid}).then(a =>
-      setListMember(oldArr => {
-        const newArr = oldArr?.filter(member => member.uidUser !== targetUid);
-        return newArr;
-      }),
-    );
+    roomActionRemove({idRoom, targetUid}).then(a => {
+      const newArr = cacheListMember?.filter(
+        member => member.uidUser !== targetUid,
+      );
+      mutateMemberList(newArr);
+      mutate([idRoom, 'listBan']);
+    });
     containerRef?.current?.animateNextTransition();
   };
 
   return (
     <>
-      {listMember?.map((a, i) => (
+      {cacheListMember?.map((a, i) => (
         <RoomMember
           key={a.uidUser}
           admin={admin}
