@@ -1,17 +1,32 @@
 import {useNavigation} from '@react-navigation/core';
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {RoomMemberList, RoomRequestedList, RoomBannedList} from '@components';
 import {myUid} from '@firebaseFunc';
 import IconEntypo from 'react-native-vector-icons/Entypo';
 import IconAnt from 'react-native-vector-icons/AntDesign';
+import {
+  Transition,
+  Transitioning,
+  TransitioningView,
+  TransitioningViewProps,
+} from 'react-native-reanimated';
+import {enableScreens} from 'react-native-screens';
+
+enableScreens(false);
 
 const roomOption = ({route}: {route: any}) => {
   const {item} = route.params;
-
-  useEffect(() => {}, []);
-
+  const transRef = useRef<TransitioningView>();
   const navigation = useNavigation();
+
+  const transition = (
+    <Transition.Together>
+      <Transition.In type="slide-right" />
+      <Transition.Change interpolation="easeInOut" />
+      <Transition.Out type="slide-right" />
+    </Transition.Together>
+  );
 
   return (
     <View>
@@ -24,17 +39,23 @@ const roomOption = ({route}: {route: any}) => {
         </TouchableOpacity>
         {item?.admin === myUid() && (
           <TouchableOpacity
+            style={{justifyContent: 'center', alignItems: 'center'}}
             onPress={() => navigation.navigate('roomInvite', {item})}>
             <IconAnt name="adduser" size={25} style={{fontWeight: 'bold'}} />
+            <Text>Invite</Text>
           </TouchableOpacity>
         )}
       </View>
-      <View style={styles.content}>
+      <Transitioning.View
+        transition={transition}
+        ref={transRef}
+        style={styles.content}>
         <View style={styles.section}>
           <Text style={styles.sectionText}>Request</Text>
         </View>
         <View style={styles.sectionDetail}>
           <RoomRequestedList
+            containerRef={transRef}
             admin={item?.admin === myUid()}
             idRoom={item?.idRoom}
           />
@@ -44,6 +65,7 @@ const roomOption = ({route}: {route: any}) => {
         </View>
         <View style={styles.sectionDetail}>
           <RoomMemberList
+            containerRef={transRef}
             admin={item?.admin === myUid()}
             idRoom={item?.idRoom}
           />
@@ -53,11 +75,12 @@ const roomOption = ({route}: {route: any}) => {
         </View>
         <View style={styles.sectionDetail}>
           <RoomBannedList
+            containerRef={transRef.current}
             admin={item?.admin === myUid()}
             idRoom={item?.idRoom}
           />
         </View>
-      </View>
+      </Transitioning.View>
     </View>
   );
 };
