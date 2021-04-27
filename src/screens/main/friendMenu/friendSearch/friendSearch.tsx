@@ -23,7 +23,10 @@ const firendSearch = () => {
   const navigation = useNavigation();
 
   const searchHandler = () => {
-    getProfileByUsername({username: firendId}).then(a => setUserInfo(a));
+    getProfileByUsername({username: firendId}).then(a => {
+      setUserInfo(a);
+      // console.log(a);
+    });
   };
 
   return (

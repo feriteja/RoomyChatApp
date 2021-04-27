@@ -2,6 +2,7 @@ import {CusLogFormInput} from '@components';
 import {useNavigation} from '@react-navigation/core';
 import React, {useEffect, useState} from 'react';
 import {
+  ActivityIndicator,
   Image,
   StyleSheet,
   Text,
@@ -21,6 +22,7 @@ const createRoom = () => {
   const [photo, setPhoto] = useState<string>('');
   const [openedPick, setOpenedPick] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation();
 
@@ -46,6 +48,17 @@ const createRoom = () => {
 
   return (
     <View style={styles.container}>
+      {loading && (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: '#00000055',
+          }}>
+          <ActivityIndicator size="large" color="#ca0000" />
+        </View>
+      )}
       <View
         style={[
           styles.header,
@@ -61,17 +74,19 @@ const createRoom = () => {
         </View>
         <View>
           <TouchableOpacity
-            onPress={() =>
+            onPress={() => {
+              setLoading(true);
               createRoomChat({
                 file: photo,
                 idRoom: idRoom,
                 name: roomName,
-              }).then(a =>
+              }).then(a => {
                 a === 'success'
                   ? navigation.replace('chat', {item: {idRoom}})
-                  : setErrorMessage(a),
-              )
-            }>
+                  : setErrorMessage(a);
+                setLoading(false);
+              });
+            }}>
             <Text style={{fontSize: 16, fontWeight: 'bold'}}>Create</Text>
           </TouchableOpacity>
         </View>

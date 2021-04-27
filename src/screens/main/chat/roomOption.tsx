@@ -21,11 +21,11 @@ const roomOption = ({route}: {route: any}) => {
   const navigation = useNavigation();
 
   const transition = (
-    <Transition.Together>
+    <Transition.Sequence>
       <Transition.In type="slide-right" />
       <Transition.Change interpolation="easeInOut" />
       <Transition.Out type="slide-right" />
-    </Transition.Together>
+    </Transition.Sequence>
   );
 
   return (

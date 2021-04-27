@@ -23,15 +23,20 @@ import {
 } from '@firebaseFunc';
 
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
+import useSWR from 'swr';
 
 const profile = () => {
+  const {data: profilInfo} = useSWR(auth().currentUser?.uid || 'useID', key =>
+    getProfileInfo({uid: key}),
+  );
+
   const [modalVisible, setModalVisible] = useState(false);
   const [invitationList, setInvitationList] = useState<
     FirebaseFirestoreTypes.DocumentData[] | undefined
   >([]);
   const [profileInfo, setProfileInfo] = useState<
     FirebaseFirestoreTypes.DocumentData | undefined
-  >(undefined);
+  >(profilInfo);
 
   const [refresh, setRefresh] = useState(false);
 
@@ -58,10 +63,10 @@ const profile = () => {
     setRefresh(a => !a);
   };
 
-  useEffect(() => {
-    getProfileInfo({uid: auth().currentUser?.uid}).then(a => setProfileInfo(a));
-    listRoomInvitation().then(a => setInvitationList(a));
-  }, [acceptHandler, rejectHandler]);
+  // useEffect(() => {
+  //   getProfileInfo({uid: auth().currentUser?.uid}).then(a => setProfileInfo(a));
+  //   listRoomInvitation().then(a => setInvitationList(a));
+  // }, []);
 
   return (
     <View style={styles.container}>

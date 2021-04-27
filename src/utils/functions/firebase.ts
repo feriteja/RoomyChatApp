@@ -110,6 +110,8 @@ const getProfileByUsername = async ({username}: {username: string}) => {
 
     const data = await user.docs[0]?.data();
 
+    console.log(data);
+
     return data;
   } catch (error) {}
 };
@@ -179,6 +181,8 @@ const createRoomChat = async ({
       .doc(idRoom)
       .set({idRoom});
 
+    console.log('invok in func');
+
     return 'success';
   } catch (error) {
     return 'error';
@@ -187,16 +191,11 @@ const createRoomChat = async ({
 
 const validUsername = async ({username}: {username: string}) => {
   try {
+    console.log('atas');
     const data = await fireStore()
       .collection('user')
       .where('username', '==', username)
       .get();
-
-    const dataComp = await fireStore().collection('user').doc(myUid()).get();
-
-    if (data.docs[0]?.data()?.username == dataComp.data()?.username) {
-      return true;
-    }
 
     return data.empty;
   } catch (error) {
@@ -476,7 +475,6 @@ const New_getChatMessages = async (idRoom: string) => {
       .orderBy('time', 'desc')
       .get();
 
-    console.log('dataChatInvok');
     const dataChat = data.docs.map((item, idx) => {
       return {...item.data(), key: item.id};
     });

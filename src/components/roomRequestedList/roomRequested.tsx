@@ -1,5 +1,3 @@
-import {getProfileInfo} from '@firebaseFunc';
-import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 import React, {useEffect, useRef, useState} from 'react';
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import Animated, {
@@ -10,6 +8,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import IconEntypo from 'react-native-vector-icons/Entypo';
 import IconFeather from 'react-native-vector-icons/Feather';
+import useSWR from 'swr';
+import {getProfileInfo} from '@firebaseFunc';
 
 interface props {
   uidUser: string;
@@ -24,10 +24,7 @@ const roomRequested: React.FC<props> = ({
   acceptHander,
   rejectHandler,
 }) => {
-  const [
-    userInfo,
-    setUserInfo,
-  ] = useState<FirebaseFirestoreTypes.DocumentData>();
+  const {data: userInfo} = useSWR(uidUser, key => getProfileInfo({uid: key}));
 
   const transition = (
     <Transition.Sequence>
@@ -36,10 +33,6 @@ const roomRequested: React.FC<props> = ({
       <Transition.In type="fade" />
     </Transition.Sequence>
   );
-
-  useEffect(() => {
-    getProfileInfo({uid: uidUser}).then(a => setUserInfo(a));
-  }, []);
 
   const ref = useRef<TransitioningView>(null);
 

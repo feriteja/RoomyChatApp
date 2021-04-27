@@ -7,6 +7,7 @@ import {
   View,
   TouchableOpacity,
   Pressable,
+  ActivityIndicator,
 } from 'react-native';
 import {CusLogFormInput, Gap} from '../../../components';
 import IconIon from 'react-native-vector-icons/Ionicons';
@@ -21,6 +22,7 @@ const login = () => {
   const [emailValid, setEmailValid] = useState<null | boolean>(null);
   const [passwordValid, setPasswordValid] = useState<null | boolean>(null);
   const [errorMessage, setErrorMessage] = useState<null | string>(null);
+  const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation();
 
@@ -35,14 +37,19 @@ const login = () => {
 
   const loginFunc = async () => {
     try {
+      setLoading(true);
       const doLoginMessage = await loginApp({
         username: userName.trim(),
         password: passWord,
       });
 
-      doLoginMessage === 'Success'
-        ? navigation.reset({index: 0, routes: [{name: 'home'}]})
-        : setErrorMessage(doLoginMessage);
+      if (doLoginMessage !== 'Success') {
+        setLoading(false);
+        setErrorMessage(doLoginMessage);
+        return;
+      }
+
+      navigation.reset({index: 0, routes: [{name: 'home'}]});
     } catch (error) {
       setErrorMessage(error);
     }
@@ -55,6 +62,11 @@ const login = () => {
 
   return (
     <View style={styles.container}>
+      {loading && (
+        <View style={styles.isLoading}>
+          <ActivityIndicator size="large" color="#facccc" />
+        </View>
+      )}
       <View style={styles.formLogin}>
         <Text style={styles.title}>Login</Text>
         <Gap height={40} />
@@ -143,5 +155,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     borderRadius: 7,
     borderWidth: 0.5,
+  },
+  isLoading: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#00000055',
+    zIndex: 99,
   },
 });

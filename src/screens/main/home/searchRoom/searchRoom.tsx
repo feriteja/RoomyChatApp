@@ -21,6 +21,7 @@ import {Gap} from '@components';
 
 const searchRoom = () => {
   const [idRoom, setIdRoom] = useState('');
+  const [loadingRequest, setLoadingRequest] = useState(false);
   const [roomInfo, setRoomInfo] = useState<
     FirebaseFirestoreTypes.DocumentData | undefined | null
   >(null);
@@ -28,12 +29,34 @@ const searchRoom = () => {
   const navigation = useNavigation();
 
   const searchHandler = () => {
-    roomSearch({idRoom}).then(a => setRoomInfo(a));
+    roomSearch({idRoom}).then(a => {
+      setRoomInfo(a);
+      setLoadingRequest(false);
+    });
   };
 
-  useEffect(() => {
-    roomSearch({idRoom}).then(a => setRoomInfo(a));
-  }, [roomRequestJoin, roomRequestCancelJoin]);
+  const roomRequestHandler = () => {
+    console.log(roomInfo);
+    setLoadingRequest(true);
+
+    if (roomInfo?.status === 'requested') {
+      roomRequestCancelJoin({
+        idRoom: roomInfo?.data?.idRoom,
+      }).then(a => {
+        searchHandler();
+      });
+      return;
+    }
+    if (roomInfo?.status === 'member') {
+      navigation.navigate('chat', {item: {idRoom}});
+      return;
+    } else {
+      roomRequestJoin({idRoom: roomInfo?.data?.idRoom}).then(a => {
+        searchHandler();
+      });
+      return;
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -79,32 +102,16 @@ const searchRoom = () => {
             </Text>
             <Gap height={20} />
             <TouchableOpacity
-              onPress={() => {
-                roomInfo.status === 'requested'
-                  ? roomRequestCancelJoin({
-                      idRoom: roomInfo?.data?.idRoom,
-                    }).then(a => searchHandler())
-                  : roomInfo.status === 'member'
-                  ? navigation.navigate('chat', {item: {idRoom}})
-                  : roomRequestJoin({idRoom: roomInfo.data?.idRoom}).then(a =>
-                      searchHandler(),
-                    );
-
-                roomInfo.status
-                  ? roomRequestCancelJoin({
-                      idRoom: roomInfo?.data?.idRoom,
-                    }).then(a => searchHandler())
-                  : roomRequestJoin({idRoom: roomInfo.data?.idRoom}).then(a =>
-                      searchHandler(),
-                    );
-              }}
+              disabled={loadingRequest}
+              onPress={() => roomRequestHandler()}
               style={{
-                backgroundColor:
-                  roomInfo.status === 'requested'
-                    ? '#cc0000'
-                    : roomInfo.status === 'member'
-                    ? '#aaa'
-                    : '#1A92DA',
+                backgroundColor: loadingRequest
+                  ? '#aaa'
+                  : roomInfo.status === 'requested'
+                  ? '#cc0000'
+                  : roomInfo.status === 'member'
+                  ? '#aaa'
+                  : '#1A92DA',
                 paddingHorizontal: 10,
                 paddingVertical: 5,
                 borderRadius: 10,

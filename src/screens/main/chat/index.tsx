@@ -25,7 +25,6 @@ import {
   myUid,
   sendMessage,
   getRoomHeadInfo,
-  New_getProfileInfo,
   New_getRoomHeadInfo,
   New_getChatMessages,
 } from '@firebaseFunc';
@@ -60,7 +59,7 @@ const ChatMessage = ({
   namePrevIdx,
   nameNextIdx,
 }: messageContent) => {
-  const {data} = useSWR(item.uidUser, New_getProfileInfo);
+  const {data} = useSWR(item.uidUser, key => getProfileInfo({uid: key}));
 
   return (
     <View style={{}}>
