@@ -46,9 +46,7 @@ const friendRequested = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={{fontSize: 16, fontWeight: 'bold'}}>Friend request</Text>
-      </View>
+      <View style={styles.header} />
       <Transitioning.View transition={transition} ref={transRef} style={{}}>
         {requestedList?.length === 0 ? (
           <View
@@ -87,10 +85,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FBFAFF',
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 70,
-    elevation: 6,
-    paddingHorizontal: 20,
+    height: 20,
   },
 });

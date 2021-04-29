@@ -33,9 +33,7 @@ const requestingFriend = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={{fontSize: 16, fontWeight: 'bold'}}>Request pending</Text>
-      </View>
+      <View style={styles.header} />
       <View style={{}}>
         {requestList?.length === 0 ? (
           <View
@@ -76,12 +74,13 @@ export default requestingFriend;
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: '#FBFAFF',
     flex: 1,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 70,
+    height: 20,
     elevation: 6,
     paddingHorizontal: 20,
   },

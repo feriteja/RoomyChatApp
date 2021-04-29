@@ -21,6 +21,7 @@ import IconFeather from 'react-native-vector-icons/Feather';
 
 import {getProfileInfo, cancelPendingFriend} from '@firebaseFunc';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
+import useSWR from 'swr';
 
 interface props {
   item: {uid: string} | FirebaseFirestoreTypes.DocumentData;
@@ -31,9 +32,8 @@ interface props {
 const {height, width} = Dimensions.get('screen');
 
 const friendPendingItem: React.FC<props> = ({item, index, cancleHandler}) => {
-  const [userInfo, setUserInfo] = useState<
-    FirebaseFirestoreTypes.DocumentData | undefined
-  >({});
+  const {data: userInfo} = useSWR(item.uid, key => getProfileInfo({uid: key}));
+
   const tranX = useSharedValue(0);
 
   const gestureHandler = useAnimatedGestureHandler({
@@ -65,65 +65,64 @@ const friendPendingItem: React.FC<props> = ({item, index, cancleHandler}) => {
     </Transition.Sequence>
   );
 
-  useEffect(() => {
-    getProfileInfo({uid: item.uid}).then(a => setUserInfo(a));
-  }, []);
-
-  const ref = useRef<TransitioningView>(null);
-
   return (
-    <Transitioning.View ref={ref} transition={transition}>
-      <PanGestureHandler
-        activeOffsetX={[-20, 20]}
-        activeOffsetY={900}
-        onGestureEvent={gestureHandler}>
-        <Animated.View style={[styles.container, animatedStyle]}>
-          <View style={styles.section1}>
-            <Image source={{uri: userInfo?.photoURL}} style={styles.imageAva} />
-            <View
-              style={{
-                marginLeft: 20,
-                alignSelf: 'stretch',
-                justifyContent: 'space-around',
-                paddingVertical: 15,
-              }}>
-              <Text
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                style={{fontWeight: 'bold', fontSize: 16}}>
-                {userInfo?.name || `MyName is ${index}`}
-              </Text>
-              <Text>{userInfo?.signature || 'none'}</Text>
-            </View>
-            <View
-              style={{
-                position: 'absolute',
-                backgroundColor: '#ff548b',
-                alignSelf: 'stretch',
-                height: 90,
-                width: 20,
-                right: 0,
-              }}
-            />
-          </View>
-          <TouchableOpacity
-            onPress={() => {
-              cancelPendingFriend({targetUid: userInfo?.uid}).then(a => {
-                if (a === 'deleted') {
-                  cancleHandler(index);
-                  tranX.value = 0;
-                  ref.current?.animateNextTransition();
-                }
-              });
+    <PanGestureHandler
+      activeOffsetX={[-20, 20]}
+      activeOffsetY={900}
+      onGestureEvent={gestureHandler}>
+      <Animated.View style={[styles.container, animatedStyle]}>
+        <View style={styles.section1}>
+          <Image
+            source={
+              userInfo?.photoURL
+                ? {uri: userInfo?.photoURL}
+                : require('../../assets/avatar/ava.jpg')
+            }
+            style={styles.imageAva}
+          />
+          <View
+            style={{
+              marginLeft: 20,
+              alignSelf: 'stretch',
+              justifyContent: 'space-around',
+              paddingVertical: 15,
             }}>
-            <View style={styles.section2}>
-              <IconFeather name="delete" size={25} />
-              <Text>Cancel</Text>
-            </View>
-          </TouchableOpacity>
-        </Animated.View>
-      </PanGestureHandler>
-    </Transitioning.View>
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              style={{fontWeight: 'bold', fontSize: 16}}>
+              {userInfo?.name || `MyName is ${index}`}
+            </Text>
+            <Text>{userInfo?.signature || 'none'}</Text>
+          </View>
+          <View
+            style={{
+              position: 'absolute',
+              backgroundColor: '#ff548b',
+              alignSelf: 'stretch',
+              height: 90,
+              width: 20,
+              right: 0,
+            }}
+          />
+        </View>
+        <TouchableOpacity
+          onPress={() => {
+            cancelPendingFriend({targetUid: userInfo?.uid}).then(a => {
+              if (a === 'deleted') {
+                cancleHandler(index);
+                tranX.value = 0;
+                ref.current?.animateNextTransition();
+              }
+            });
+          }}>
+          <View style={styles.section2}>
+            <IconFeather name="delete" size={25} />
+            <Text>Cancel</Text>
+          </View>
+        </TouchableOpacity>
+      </Animated.View>
+    </PanGestureHandler>
   );
 };
 
