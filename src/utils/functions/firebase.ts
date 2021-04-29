@@ -103,6 +103,10 @@ const New_getProfileInfo = async (uid = auth().currentUser?.uid) => {
 
 const getProfileByUsername = async ({username}: {username: string}) => {
   try {
+    const pendingList = await listPendingFriend();
+    const friendList = await listFriendList();
+    let status = undefined;
+
     const user = await fireStore()
       .collection('user')
       .where('username', '==', username)
@@ -110,9 +114,18 @@ const getProfileByUsername = async ({username}: {username: string}) => {
 
     const data = await user.docs[0]?.data();
 
-    console.log(data);
+    const statusPending = pendingList?.find(user => user.uid == data.uid);
+    const friendStatus = friendList?.find(user => user.uid == data.uid);
 
-    return data;
+    if (statusPending) {
+      status = 'pending';
+    }
+
+    if (friendStatus) {
+      status = 'friend';
+    }
+
+    return {...data, status};
   } catch (error) {}
 };
 
@@ -354,6 +367,14 @@ const deleteFriend = async ({targetUid}: {targetUid: string}) => {
       .collection('friendList')
       .doc(targetUid)
       .delete();
+
+    await fireStore()
+      .collection('user')
+      .doc(targetUid)
+      .collection('friendList')
+      .doc(myUid())
+      .delete();
+
     return 'deleted';
   } catch (error) {
     return false;
@@ -400,7 +421,6 @@ const listPendingFriend = async () => {
 
     const listUID = data.docs.map(a => a.data());
 
-    console.log('listPendingFriend ', listUID);
     return listUID;
   } catch (error) {}
 };

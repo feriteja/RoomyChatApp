@@ -10,7 +10,11 @@ import {
 } from 'react-native';
 import IconEntypo from 'react-native-vector-icons/Entypo';
 import IconFeather from 'react-native-vector-icons/Feather';
-import {getProfileByUsername, requestFriend} from '@firebaseFunc';
+import {
+  getProfileByUsername,
+  requestFriend,
+  cancelPendingFriend,
+} from '@firebaseFunc';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 import {Gap} from '@components';
 
@@ -19,15 +23,50 @@ const firendSearch = () => {
   const [userInfo, setUserInfo] = useState<
     FirebaseFirestoreTypes.DocumentData | undefined | null
   >(null);
+  const [isRequesting, setIsRequesting] = useState(false);
 
   const navigation = useNavigation();
 
   const searchHandler = () => {
     getProfileByUsername({username: firendId}).then(a => {
       setUserInfo(a);
-      // console.log(a);
     });
   };
+
+  const requestHandler = () => {
+    setIsRequesting(true);
+    if (userInfo?.status == undefined) {
+      requestFriend({targetUid: userInfo?.uid}).then(() => {
+        setIsRequesting(false);
+        setUserInfo(oldData => {
+          return {...oldData, status: 'pending'};
+        });
+      });
+    }
+    if (userInfo?.status == 'pending') {
+      cancelPendingFriend({targetUid: userInfo?.uid}).then(() => {
+        setIsRequesting(false);
+        setUserInfo(oldData => {
+          return {...oldData, status: undefined};
+        });
+      });
+    }
+  };
+
+  const colorButton = () => {
+    if (isRequesting) return '#aaa';
+    if (userInfo?.status == 'pending') return '#FF5F1F';
+    if (userInfo?.status == 'friend') return '#aaa';
+
+    return '#1A92DA';
+  };
+
+  const textButton =
+    userInfo?.status == undefined
+      ? 'Add friend'
+      : userInfo?.status == 'pending'
+      ? 'Cancel'
+      : 'Delete';
 
   return (
     <View style={styles.container}>
@@ -72,14 +111,15 @@ const firendSearch = () => {
             <Text style={{fontSize: 18}}>{userInfo?.signature || ''}</Text>
             <Gap height={20} />
             <TouchableOpacity
-              onPress={() => requestFriend({targetUid: userInfo?.uid})}
+              disabled={userInfo.status == 'friend'}
+              onPress={() => requestHandler()}
               style={{
-                backgroundColor: '#1A92DA',
+                backgroundColor: colorButton(),
                 paddingHorizontal: 10,
                 paddingVertical: 5,
                 borderRadius: 10,
               }}>
-              <Text style={{color: '#fff'}}>Add friend</Text>
+              <Text style={{color: '#fff'}}>{textButton}</Text>
             </TouchableOpacity>
           </>
         ) : userInfo === undefined ? (

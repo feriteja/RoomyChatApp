@@ -16,7 +16,6 @@ const friendList = () => {
   const [friendData, setFriendData] = useState<
     FirebaseFirestoreTypes.DocumentData[] | undefined
   >([]);
-  const [refresh, setRefresh] = useState(false);
 
   const TransRef = useRef<TransitioningView>();
 
@@ -24,7 +23,6 @@ const friendList = () => {
 
   const deleteHandler = async (targetUid: string) => {
     const isDeleted = await deleteFriend({targetUid});
-
     if (isDeleted) {
       const newArr = friendData?.filter(user => user.uid !== targetUid);
       setFriendData(newArr);

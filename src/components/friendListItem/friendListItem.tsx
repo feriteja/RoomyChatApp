@@ -52,8 +52,6 @@ const friendListItem: React.FC<props> = ({item, index, deleteHandler}) => {
     };
   });
 
-  const deleteFunc = () => {};
-
   return (
     <View style={styles.container}>
       <View style={[styles.contentBack]}>
