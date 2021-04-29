@@ -68,8 +68,9 @@ const ChatMessage = ({
           {nameCurrIdx !== myUid() && (
             <Image
               source={
-                {uri: data?.photoURL} ||
-                require('../../../assets/avatar/ava.jpg')
+                data?.photoURL
+                  ? {uri: data?.photoURL}
+                  : require('../../../assets/avatar/ava.jpg')
               }
               style={{
                 height: 35,

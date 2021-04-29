@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {
   listRequestedFriend,
@@ -8,22 +8,24 @@ import {
 import {useNavigation} from '@react-navigation/core';
 import {Gap, FriendRequestItem} from '@components';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
+import {
+  Transition,
+  Transitioning,
+  TransitioningView,
+} from 'react-native-reanimated';
 
 const friendRequested = () => {
   const [requestedList, setRequestedList] = useState<
     FirebaseFirestoreTypes.DocumentData[] | undefined
   >([]);
-  const [refresh, setRefresh] = useState(false);
 
+  const transRef = useRef<TransitioningView>();
   const navigation = useNavigation();
 
-  const actionHandler = (idx: number) => {
-    setRequestedList(a => {
-      const newArr = a;
-      newArr?.splice(idx, 1);
-      return newArr;
-    });
-    setRefresh(a => !a);
+  const actionHandler = (targetUid: string) => {
+    const newArr = requestedList?.filter(user => user.uid !== targetUid);
+    setRequestedList(newArr);
+    transRef.current?.animateNextTransition();
   };
 
   useEffect(() => {
@@ -34,12 +36,20 @@ const friendRequested = () => {
     return unsubscribe;
   }, [navigation]);
 
+  const transition = (
+    <Transition.Sequence>
+      <Transition.Out type="slide-left" />
+      <Transition.Change interpolation="easeInOut" />
+      <Transition.In type="fade" />
+    </Transition.Sequence>
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={{fontSize: 16, fontWeight: 'bold'}}>Friend request</Text>
       </View>
-      <View style={{}}>
+      <Transitioning.View transition={transition} ref={transRef} style={{}}>
         {requestedList?.length === 0 ? (
           <View
             style={{
@@ -51,7 +61,6 @@ const friendRequested = () => {
           </View>
         ) : (
           <FlatList
-            extraData={refresh}
             ItemSeparatorComponent={() => <Gap height={5} />}
             keyExtractor={(a, i) => i.toString()}
             data={requestedList}
@@ -65,7 +74,7 @@ const friendRequested = () => {
             )}
           />
         )}
-      </View>
+      </Transitioning.View>
     </View>
   );
 };
@@ -75,6 +84,7 @@ export default friendRequested;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FBFAFF',
   },
   header: {
     flexDirection: 'row',
