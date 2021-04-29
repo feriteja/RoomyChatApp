@@ -137,9 +137,7 @@ const validRoomId = async ({idRoom}: {idRoom: string}) => {
       .get();
 
     return data.empty;
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const createRoomChat = async ({
@@ -208,16 +206,12 @@ const validUsername = async ({username}: {username: string}) => {
       .where('username', '==', username)
       .get();
 
-    console.log(data);
-
     if (userInfo?.uid === data.docs[0].data().uid) {
       return true;
     }
 
     return data.empty;
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const updateProfile = async ({
@@ -285,9 +279,7 @@ const requestFriend = async ({targetUid}: {targetUid: string}) => {
       .set({uid: myUid()});
 
     return 'sent';
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const cancelPendingFriend = async ({targetUid}: {targetUid: string}) => {
@@ -306,7 +298,6 @@ const cancelPendingFriend = async ({targetUid}: {targetUid: string}) => {
       .delete();
     return 'deleted';
   } catch (error) {
-    console.log(error);
     return 'error';
   }
 };
@@ -410,8 +401,6 @@ const listRequestedFriend = async () => {
 
     const listUID = data.docs.map(a => a.data());
 
-    console.log('listRequestedFriend', listUID);
-
     return listUID;
   } catch (error) {}
 };
@@ -427,9 +416,7 @@ const listPendingFriend = async () => {
     const listUID = data.docs.map(a => a.data());
 
     return listUID;
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const listUserRooms = async () => {
@@ -476,9 +463,7 @@ const getChatMessages = ({
       .collection('chat')
       .orderBy('time', 'desc');
     // .limit(limit);
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const New_getChatMessages = async (idRoom: string) => {
@@ -497,9 +482,7 @@ const New_getChatMessages = async (idRoom: string) => {
     return dataChat;
 
     // .limit(limit);
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const sendMessage = async ({
@@ -521,10 +504,7 @@ const sendMessage = async ({
         uidUser: myUid(),
       });
     return;
-  } catch (error) {
-    console.log(error);
-    console.log('error');
-  }
+  } catch (error) {}
 };
 
 const listRequestedRoom = async ({idRoom}: {idRoom: string}) => {
@@ -539,9 +519,7 @@ const listRequestedRoom = async ({idRoom}: {idRoom: string}) => {
     const list = data.docs.map((a, i) => a.data());
 
     return list;
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const listMemberRoom = async ({idRoom}: {idRoom: string}) => {
@@ -556,9 +534,7 @@ const listMemberRoom = async ({idRoom}: {idRoom: string}) => {
     const list = data.docs.map((a, i) => a.data());
 
     return list;
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const listBannedRoom = async ({idRoom}: {idRoom: string}) => {
@@ -572,9 +548,7 @@ const listBannedRoom = async ({idRoom}: {idRoom: string}) => {
     const list = data.docs.map((a, i) => a.data());
 
     return list;
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const listRoomInvitation = async () => {
@@ -588,9 +562,7 @@ const listRoomInvitation = async () => {
     const list = data.docs.map(a => a.data());
 
     return list;
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const roomActionRemove = async ({
@@ -807,8 +779,6 @@ const roomSearch = async ({idRoom}: {idRoom: string}) => {
       .doc(myUid())
       .get();
 
-    console.log(isRequested.exists);
-
     return {
       data: dataResult,
       status: isMember.exists
@@ -817,9 +787,7 @@ const roomSearch = async ({idRoom}: {idRoom: string}) => {
         ? 'requested'
         : undefined,
     };
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const roomRequestJoin = async ({idRoom}: {idRoom: string}) => {
@@ -839,9 +807,7 @@ const roomRequestJoin = async ({idRoom}: {idRoom: string}) => {
       .set({uidUser: myUid()});
 
     return 'requested';
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 const roomRequestCancelJoin = async ({idRoom}: {idRoom: string}) => {
   try {
@@ -860,9 +826,7 @@ const roomRequestCancelJoin = async ({idRoom}: {idRoom: string}) => {
       .delete();
 
     return 'canceled';
-  } catch (error) {
-    return console.log(error);
-  }
+  } catch (error) {}
 };
 
 const userActionAcceptInvite = async ({idRoom}: {idRoom: string}) => {

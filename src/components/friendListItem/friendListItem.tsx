@@ -24,8 +24,6 @@ interface props {
   deleteHandler: (a: string) => void;
 }
 
-const {height, width} = Dimensions.get('screen');
-
 const friendListItem: React.FC<props> = ({item, index, deleteHandler}) => {
   const {data: userInfo} = useSWR(item.uid, key => getProfileInfo({uid: key}));
 

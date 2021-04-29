@@ -36,7 +36,6 @@ const searchRoom = () => {
   };
 
   const roomRequestHandler = () => {
-    console.log(roomInfo);
     setLoadingRequest(true);
 
     if (roomInfo?.status === 'requested') {

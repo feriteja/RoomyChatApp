@@ -42,14 +42,16 @@ const profile = () => {
     return unsubscribe;
   }, [navigation]);
 
+  const {data: invitationList, mutate: mutateInviteList} = useSWR(
+    'roomInvitaion',
+    listRoomInvitation,
+  );
   const acceptHandler = (idRoom: string) => {
-    userActionAcceptInvite({idRoom});
+    userActionAcceptInvite({idRoom}).then(() => mutateInviteList());
   };
   const rejectHandler = (idRoom: string) => {
-    userActionRejectInvite({idRoom});
+    userActionRejectInvite({idRoom}).then(() => mutateInviteList());
   };
-
-  const {data: invitationList} = useSWR('roomInvitaion', listRoomInvitation);
 
   return (
     <View style={styles.container}>
@@ -138,7 +140,9 @@ const profile = () => {
       </View>
       <Gap height={40} />
       <View style={styles.content}>
-        <Text style={{fontSize: 18, fontWeight: 'bold'}}>Invitation</Text>
+        <Text style={{fontSize: 18, fontWeight: 'bold', paddingHorizontal: 20}}>
+          Invitation
+        </Text>
         <Gap height={20} />
         <FlatList
           keyExtractor={(a, i) => i + 'invitation'}
@@ -166,7 +170,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FBFAFF',
   },
   content: {
-    paddingHorizontal: 20,
+    // paddingHorizontal: 20,
   },
   userInfo: {
     paddingHorizontal: 40,

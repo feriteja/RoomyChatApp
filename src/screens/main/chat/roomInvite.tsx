@@ -13,8 +13,6 @@ const roomInvite = ({route}: any) => {
     friendDataListInvite(key),
   );
 
-  console.log('friendData', friendData);
-
   const friendDataListInvite = async (idRoom: string) => {
     try {
       const invitedList = await roomWhoIsInvitedList({idRoom: idRoom});
