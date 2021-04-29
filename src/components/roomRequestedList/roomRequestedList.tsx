@@ -6,7 +6,7 @@ import RoomRequest from './roomRequested';
 
 import {roomActionAccept, roomActionReject} from '@firebaseFunc';
 import {TransitioningView} from 'react-native-reanimated';
-import useSWR from 'swr';
+import useSWR, {mutate} from 'swr';
 
 interface props {
   idRoom: string;
@@ -20,16 +20,12 @@ const roomRequestedList: React.FC<props> = ({idRoom, admin, containerRef}) => {
     key => listRequestedRoom({idRoom: key}),
   );
 
-  console.log('cacheMutate');
-
-  const [listUser, setListUser] = useState(cacheListRequest);
-
   const rejectHandler = (targetUid: string) => {
     roomActionReject({idRoom, targetUid}).then(a => {
       const newArr = cacheListRequest?.filter(
         member => member.uidUser !== targetUid,
       );
-      mutateRequestList(newArr);
+      mutateRequestList(newArr, false);
 
       containerRef?.current?.animateNextTransition();
     });
@@ -41,7 +37,8 @@ const roomRequestedList: React.FC<props> = ({idRoom, admin, containerRef}) => {
         member => member.uidUser !== targetUid,
       );
 
-      mutateRequestList(newArr);
+      mutateRequestList(newArr, false);
+      mutate([idRoom, 'listMember']);
 
       containerRef?.current?.animateNextTransition();
     });

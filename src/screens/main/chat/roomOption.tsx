@@ -22,9 +22,8 @@ const roomOption = ({route}: {route: any}) => {
 
   const transition = (
     <Transition.Sequence>
-      <Transition.In type="slide-right" />
+      <Transition.Out type="slide-left" interpolation="easeInOut" />
       <Transition.Change interpolation="easeInOut" />
-      <Transition.Out type="slide-right" />
     </Transition.Sequence>
   );
 

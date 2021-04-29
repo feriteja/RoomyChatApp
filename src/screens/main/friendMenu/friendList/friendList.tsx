@@ -1,11 +1,16 @@
 import {FriendListItem, Gap} from '@components';
 import {useNavigation} from '@react-navigation/core';
 
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import IconAnt from 'react-native-vector-icons/AntDesign';
-import {listFriendList} from '@firebaseFunc';
+import {listFriendList, deleteFriend} from '@firebaseFunc';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
+import {
+  Transition,
+  Transitioning,
+  TransitioningView,
+} from 'react-native-reanimated';
 
 const friendList = () => {
   const [friendData, setFriendData] = useState<
@@ -13,15 +18,18 @@ const friendList = () => {
   >([]);
   const [refresh, setRefresh] = useState(false);
 
+  const TransRef = useRef<TransitioningView>();
+
   const navigation = useNavigation();
 
-  const deleteHandler = (idx: number) => {
-    setFriendData(a => {
-      const newArr = a;
-      newArr?.splice(idx, 1);
-      return newArr;
-    });
-    setRefresh(a => !a);
+  const deleteHandler = async (targetUid: string) => {
+    const isDeleted = await deleteFriend({targetUid});
+
+    if (isDeleted) {
+      const newArr = friendData?.filter(user => user.uid !== targetUid);
+      setFriendData(newArr);
+      TransRef.current?.animateNextTransition();
+    }
   };
 
   useEffect(() => {
@@ -32,6 +40,14 @@ const friendList = () => {
     return unsubscribe;
   }, [navigation]);
 
+  const transition = (
+    <Transition.Sequence>
+      <Transition.Out type="slide-left" />
+      <Transition.Change interpolation="easeInOut" />
+      <Transition.In type="fade" />
+    </Transition.Sequence>
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -39,12 +55,14 @@ const friendList = () => {
           style={{flexDirection: 'row', alignItems: 'center'}}
           onPress={() => navigation.navigate('friendSearch')}>
           <IconAnt name="adduser" size={25} style={{fontWeight: 'bold'}} />
-          <Text style={{fontSize: 16, fontWeight: 'bold'}}>Add friend</Text>
+          <Text style={{fontSize: 14, fontWeight: 'bold'}}>Add friend</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.content}>
+      <Transitioning.View
+        transition={transition}
+        ref={TransRef}
+        style={styles.content}>
         <FlatList
-          extraData={refresh}
           ItemSeparatorComponent={() => <Gap height={5} />}
           keyExtractor={(a, i) => i.toString()}
           data={friendData}
@@ -57,7 +75,7 @@ const friendList = () => {
             />
           )}
         />
-      </View>
+      </Transitioning.View>
     </View>
   );
 };
@@ -67,6 +85,7 @@ export default friendList;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FBFAFF',
   },
   header: {
     flexDirection: 'row',

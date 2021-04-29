@@ -25,14 +25,13 @@ import {
   myUid,
   sendMessage,
   getRoomHeadInfo,
-  New_getRoomHeadInfo,
   New_getChatMessages,
 } from '@firebaseFunc';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 import {useNavigation} from '@react-navigation/core';
 import {enableScreens} from 'react-native-screens';
 import firestore from '@react-native-firebase/firestore';
-import useSWR from 'swr';
+import useSWR, {mutate} from 'swr';
 // enableScreens(false);
 interface props {
   index: number;
@@ -146,6 +145,8 @@ const InputSection = ({idRoom}: {idRoom: string}) => {
 const chat: React.FC<props> = ({route}: any) => {
   const navigation = useNavigation();
 
+  const [isMount, setIsMount] = useState(false);
+
   const transRef = useRef<TransitioningView>();
 
   const {item: items, index: indexParams}: props = route.params;
@@ -153,14 +154,15 @@ const chat: React.FC<props> = ({route}: any) => {
   const {data: roomInfo} = useSWR([items.idRoom, 'roomInfo'], key =>
     getRoomHeadInfo({idRoom: key}),
   );
-  const {data: dataChat, mutate: mutateDataChat} = useSWR(
+  const {data: dataChat, mutate: mutateChat} = useSWR(
     [items.idRoom, 'chatMessage'],
-    key => getChatMessages({idRoom: key}),
+    key => New_getChatMessages(key),
   );
 
   const [messages, setMessages] = useState(dataChat);
 
   useEffect(() => {
+    setIsMount(true);
     const subscribe = firestore()
       .collection('rooms')
       .doc(items.idRoom)
@@ -177,17 +179,21 @@ const chat: React.FC<props> = ({route}: any) => {
         });
 
         setMessages(users);
-        mutateDataChat(users);
-        transRef.current?.animateNextTransition();
+
+        if (isMount) {
+          console.log('invok');
+          mutateChat(users);
+          transRef.current?.animateNextTransition();
+        }
       });
 
     return () => subscribe();
-  }, []);
+  }, [isMount]);
 
   const transition = (
     <Transition.Sequence>
       <Transition.Change interpolation="easeInOut" />
-      <Transition.In type="scale" />
+      <Transition.In type="fade" />
       <Transition.Out type="fade" />
     </Transition.Sequence>
   );
@@ -212,12 +218,11 @@ const chat: React.FC<props> = ({route}: any) => {
         </View>
       </View>
       <Transitioning.View
-        transition={transition}
         ref={transRef}
+        transition={transition}
         style={styles.content}>
         <FlatList
           data={messages}
-          extraData={messages}
           initialNumToRender={20}
           // onEndReached={() => setNumLimit(a => a + 10)} // handle refresh
           // onEndReachedThreshold={0.2}

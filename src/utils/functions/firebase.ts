@@ -355,7 +355,9 @@ const deleteFriend = async ({targetUid}: {targetUid: string}) => {
       .doc(targetUid)
       .delete();
     return 'deleted';
-  } catch (error) {}
+  } catch (error) {
+    return false;
+  }
 };
 
 const listFriendList = async () => {
@@ -502,7 +504,8 @@ const listRequestedRoom = async ({idRoom}: {idRoom: string}) => {
   const roomPath = fireStore()
     .collection('rooms')
     .doc(idRoom)
-    .collection('requested');
+    .collection('requested')
+    .orderBy('uidUser', 'asc');
   try {
     const data = await roomPath.get();
 
@@ -518,7 +521,8 @@ const listMemberRoom = async ({idRoom}: {idRoom: string}) => {
   const roomPath = fireStore()
     .collection('rooms')
     .doc(idRoom)
-    .collection('members');
+    .collection('members')
+    .orderBy('uidUser', 'asc');
   try {
     const data = await roomPath.get();
 
