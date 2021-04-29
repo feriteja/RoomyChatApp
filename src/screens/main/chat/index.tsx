@@ -32,7 +32,6 @@ import {useNavigation} from '@react-navigation/core';
 import {enableScreens} from 'react-native-screens';
 import firestore from '@react-native-firebase/firestore';
 import useSWR, {mutate} from 'swr';
-enableScreens();
 
 import {ChatMessage} from '@components';
 
@@ -87,7 +86,7 @@ const InputSection = ({idRoom}: {idRoom: string}) => {
 const chat: React.FC<props> = ({route}: any) => {
   const navigation = useNavigation();
 
-  const [isMount, setIsMount] = useState(false);
+  const isMounted = useRef(false);
 
   const transRef = useRef<TransitioningView>();
 
@@ -112,7 +111,7 @@ const chat: React.FC<props> = ({route}: any) => {
   );
 
   useEffect(() => {
-    setIsMount(true);
+    isMounted.current = true;
     const subscribe = firestore()
       .collection('rooms')
       .doc(items.idRoom)
@@ -130,15 +129,14 @@ const chat: React.FC<props> = ({route}: any) => {
 
         // setMessages(users);
 
-        if (isMount) {
-          console.log('invok');
+        if (isMounted) {
           mutateChat(users);
-          transRef.current?.animateNextTransition();
+          // transRef.current?.animateNextTransition();
         }
       });
 
     return () => subscribe();
-  }, [isMount]);
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -152,8 +150,9 @@ const chat: React.FC<props> = ({route}: any) => {
         </Text>
         <View style={{position: 'absolute', right: 20}}>
           <TouchableOpacity
+            disabled={!roomInfo}
             onPress={() =>
-              navigation.navigate('roomOption', {item: roomInfo.roomInfo})
+              navigation.navigate('roomOption', {item: roomInfo?.roomInfo})
             }>
             <IconEntypo name="dots-three-horizontal" size={25} />
           </TouchableOpacity>

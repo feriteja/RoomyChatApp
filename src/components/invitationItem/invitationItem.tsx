@@ -2,6 +2,8 @@ import React, {useEffect, useState} from 'react';
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {getRoomHeadInfo} from '@firebaseFunc';
 import IconEntypo from 'react-native-vector-icons/Entypo';
+import IconFeather from 'react-native-vector-icons/Feather';
+import useSWR from 'swr';
 
 interface props {
   idRoom: string;
@@ -14,33 +16,31 @@ const invitationItem: React.FC<props> = ({
   userActionAcceptInvite,
   userActionRejectInvite,
 }) => {
-  const [roomInfo, setRoomInfo] = useState(null);
-
-  useEffect(() => {
-    getRoomHeadInfo({idRoom}).then(a => setRoomInfo(a?.roomInfo));
-  }, []);
+  const {data: roomInfo} = useSWR([idRoom, 'roomHeadInfo'], key =>
+    getRoomHeadInfo({idRoom: key}),
+  );
 
   return (
     <View style={styles.container}>
       <View style={{flexDirection: 'row'}}>
         <Image
-          source={{uri: roomInfo?.photoURL}}
+          source={{uri: roomInfo?.roomInfo?.photoURL}}
           style={{height: 60, width: 60, borderRadius: 10}}
         />
         <Text style={{alignSelf: 'center', marginLeft: 10, fontSize: 14}}>
-          {roomInfo?.name}
+          {roomInfo?.roomInfo?.name}
         </Text>
       </View>
       <View style={{flexDirection: 'row'}}>
-        <TouchableOpacity onPress={() => userActionAcceptInvite({idRoom})}>
+        <TouchableOpacity onPress={() => userActionAcceptInvite(idRoom)}>
           <View style={styles.section2}>
             <IconEntypo name="check" size={20} />
             <Text style={{fontSize: 13}}>Accept</Text>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => userActionRejectInvite({idRoom})}>
-          <View style={[styles.section2, {backgroundColor: '#cc0000'}]}>
-            <IconEntypo name="cross" size={20} />
+        <TouchableOpacity onPress={() => userActionRejectInvite(idRoom)}>
+          <View style={[styles.section2, {backgroundColor: '#ff548b'}]}>
+            <IconFeather name="delete" size={20} />
             <Text style={{fontSize: 13}}>Delete</Text>
           </View>
         </TouchableOpacity>

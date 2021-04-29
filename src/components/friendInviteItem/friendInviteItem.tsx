@@ -1,23 +1,21 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {StyleSheet, Text, View, Dimensions, Image, Alert} from 'react-native';
 import {
-  PanGestureHandler,
+  StyleSheet,
+  Text,
+  View,
+  Dimensions,
+  Image,
+  Alert,
   TouchableOpacity,
-} from 'react-native-gesture-handler';
-import Animated, {
-  withTiming,
-  useAnimatedGestureHandler,
-  useSharedValue,
-  withSpring,
-  useAnimatedStyle,
-  Transition,
-  Transitioning,
-  TransitioningView,
-} from 'react-native-reanimated';
+} from 'react-native';
+
 import IconAnt from 'react-native-vector-icons/AntDesign';
-import {getProfileInfo, roomInviteFriend} from '@firebaseFunc';
-import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
-import useSWR from 'swr';
+import {
+  getProfileInfo,
+  roomInviteFriend,
+  roomInviteFriendCancel,
+} from '@firebaseFunc';
+import useSWR, {mutate} from 'swr';
 
 interface props {
   item: any;
@@ -26,20 +24,57 @@ interface props {
 }
 
 const friendInviteItem: React.FC<props> = ({item, index, data}) => {
-  const {data: userInfo} = useSWR(item.uid, key => getProfileInfo(key));
+  const {data: userInfo} = useSWR(item.uid, key => getProfileInfo({uid: key}));
+  const [isLoading, setIsLoading] = useState(false);
 
-  const tranX = useSharedValue(0);
+  const isMounted = useRef(false);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{translateX: tranX.value}],
+  const inviteHandler = () => {
+    setIsLoading(true);
+    roomInviteFriend({
+      idRoom: data.idRoom,
+      targetUid: item.uid,
+    }).then(() => {
+      mutate([data.idRoom, 'friendInvite']).then(() => {
+        if (isMounted.current) setIsLoading(false);
+      });
+    });
+  };
+
+  const cancelInviteHandler = () => {
+    setIsLoading(true);
+    roomInviteFriendCancel({
+      idRoom: data.idRoom,
+      targetUid: item.uid,
+    }).then(() => {
+      mutate([data.idRoom, 'friendInvite']).then(() => {
+        if (isMounted.current) setIsLoading(false);
+      });
+    });
+  };
+
+  const actionHandler = () => {
+    item.status ? cancelInviteHandler() : inviteHandler();
+  };
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
     };
-  });
+  }, []);
 
   return (
-    <Animated.View style={[styles.container, animatedStyle]}>
+    <View style={[styles.container]}>
       <View style={styles.section1}>
-        <Image source={{uri: userInfo?.photoURL}} style={styles.imageAva} />
+        <Image
+          source={
+            userInfo?.photoURL
+              ? {uri: userInfo?.photoURL}
+              : require('../../assets/avatar/ava.jpg')
+          }
+          style={styles.imageAva}
+        />
         <View
           style={{
             marginLeft: 20,
@@ -57,19 +92,23 @@ const friendInviteItem: React.FC<props> = ({item, index, data}) => {
         </View>
       </View>
 
-      <TouchableOpacity
-        onPress={() => {
-          roomInviteFriend({
-            idRoom: data.idRoom,
-            targetUid: item.uid,
-          }).then(() => Alert.alert('invited'));
-        }}>
-        <View style={styles.section2}>
+      <TouchableOpacity onPress={() => actionHandler()}>
+        <View
+          style={[
+            styles.section2,
+            {
+              backgroundColor: isLoading
+                ? '#aaa'
+                : item.status
+                ? '#ff548b'
+                : '#5cd85c',
+            },
+          ]}>
           <IconAnt name="adduser" size={25} />
-          <Text>Invite</Text>
+          <Text>{item.status ? 'Invited' : 'Invite'} </Text>
         </View>
       </TouchableOpacity>
-    </Animated.View>
+    </View>
   );
 };
 
@@ -102,7 +141,6 @@ const styles = StyleSheet.create({
   section2: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#5cd85c',
     height: 90,
     paddingHorizontal: 10,
   },

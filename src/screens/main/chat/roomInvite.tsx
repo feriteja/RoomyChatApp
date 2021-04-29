@@ -2,23 +2,35 @@ import {useNavigation} from '@react-navigation/core';
 import React, {useEffect, useState} from 'react';
 import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import IconEntypo from 'react-native-vector-icons/Entypo';
-import {listFriendList} from '@firebaseFunc';
-import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
+import {listFriendList, roomWhoIsInvitedList} from '@firebaseFunc';
+
 import {FriendInviteItem, Gap} from '@components';
+import useSWR from 'swr';
 
 const roomInvite = ({route}: any) => {
-  const [friendData, setFriendData] = useState<
-    FirebaseFirestoreTypes.DocumentData[] | undefined
-  >([]);
-  const [refresh, setRefresh] = useState(false);
-
   const {item: data} = route.params;
+  const {data: friendData} = useSWR([data.idRoom, 'friendInvite'], key =>
+    friendDataListInvite(key),
+  );
+
+  console.log('friendData', friendData);
+
+  const friendDataListInvite = async (idRoom: string) => {
+    try {
+      const invitedList = await roomWhoIsInvitedList({idRoom: idRoom});
+      const friendList = await listFriendList();
+
+      const list = friendList?.map(a => {
+        if (invitedList?.some(user => user.uidUser === a.uid)) {
+          return {...a, status: 'invited'};
+        }
+        return {...a, status: undefined};
+      });
+      return list;
+    } catch (error) {}
+  };
 
   const navigation = useNavigation();
-
-  useEffect(() => {
-    listFriendList().then(a => setFriendData(a));
-  }, []);
 
   return (
     <View style={{flex: 1}}>
@@ -32,7 +44,6 @@ const roomInvite = ({route}: any) => {
       </View>
       <View style={styles.content}>
         <FlatList
-          extraData={refresh}
           ItemSeparatorComponent={() => <Gap height={5} />}
           keyExtractor={(a, i) => i.toString()}
           data={friendData}

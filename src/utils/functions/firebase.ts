@@ -194,8 +194,6 @@ const createRoomChat = async ({
       .doc(idRoom)
       .set({idRoom});
 
-    console.log('invok in func');
-
     return 'success';
   } catch (error) {
     return 'error';
@@ -204,11 +202,17 @@ const createRoomChat = async ({
 
 const validUsername = async ({username}: {username: string}) => {
   try {
-    console.log('atas');
+    const userInfo = await getProfileInfo({uid: myUid()});
     const data = await fireStore()
       .collection('user')
       .where('username', '==', username)
       .get();
+
+    console.log(data);
+
+    if (userInfo?.uid === data.docs[0].data().uid) {
+      return true;
+    }
 
     return data.empty;
   } catch (error) {
@@ -715,6 +719,19 @@ const roomActionReject = async ({
   }
 };
 
+const roomWhoIsInvitedList = async ({idRoom}: {idRoom: string}) => {
+  try {
+    const data = await fireStore()
+      .collection('rooms')
+      .doc(idRoom)
+      .collection('invite')
+      .get();
+
+    const list = data.docs.map(user => user.data());
+    return list;
+  } catch (error) {}
+};
+
 const roomInviteFriend = async ({
   targetUid,
   idRoom,
@@ -736,6 +753,33 @@ const roomInviteFriend = async ({
       .collection('roomInvitation')
       .doc(idRoom)
       .set({idRoom});
+    return 'invited';
+  } catch (error) {}
+};
+
+const roomInviteFriendCancel = async ({
+  targetUid,
+  idRoom,
+}: {
+  idRoom: string;
+  targetUid: string;
+}) => {
+  try {
+    await fireStore()
+      .collection('rooms')
+      .doc(idRoom)
+      .collection('invite')
+      .doc(targetUid)
+      .delete();
+
+    await fireStore()
+      .collection('user')
+      .doc(targetUid)
+      .collection('roomInvitation')
+      .doc(idRoom)
+      .delete();
+
+    return 'canceled';
   } catch (error) {}
 };
 
@@ -909,6 +953,8 @@ export {
   roomRequestJoin,
   roomRequestCancelJoin,
   roomInviteFriend,
+  roomInviteFriendCancel,
+  roomWhoIsInvitedList,
   userActionAcceptInvite,
   userActionRejectInvite,
 };

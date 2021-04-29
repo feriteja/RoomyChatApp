@@ -26,27 +26,17 @@ import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 import useSWR from 'swr';
 
 const profile = () => {
-  const {data: profilInfo} = useSWR(auth().currentUser?.uid || 'useID', key =>
-    getProfileInfo({uid: key}),
+  const {data: profileInfo, mutate: mutateProfileInfo} = useSWR(
+    auth().currentUser?.uid || 'useID',
+    key => getProfileInfo({uid: key}),
   );
-
   const [modalVisible, setModalVisible] = useState(false);
-  const [invitationList, setInvitationList] = useState<
-    FirebaseFirestoreTypes.DocumentData[] | undefined
-  >([]);
-  const [profileInfo, setProfileInfo] = useState<
-    FirebaseFirestoreTypes.DocumentData | undefined
-  >(profilInfo);
-
-  const [refresh, setRefresh] = useState(false);
 
   const navigation = useNavigation();
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      getProfileInfo({uid: auth().currentUser?.uid}).then(a =>
-        setProfileInfo(a),
-      );
+      mutateProfileInfo();
     });
 
     return unsubscribe;
@@ -54,19 +44,12 @@ const profile = () => {
 
   const acceptHandler = (idRoom: string) => {
     userActionAcceptInvite({idRoom});
-    console.log('invok');
-    setRefresh(a => !a);
   };
   const rejectHandler = (idRoom: string) => {
     userActionRejectInvite({idRoom});
-
-    setRefresh(a => !a);
   };
 
-  // useEffect(() => {
-  //   getProfileInfo({uid: auth().currentUser?.uid}).then(a => setProfileInfo(a));
-  //   listRoomInvitation().then(a => setInvitationList(a));
-  // }, []);
+  const {data: invitationList} = useSWR('roomInvitaion', listRoomInvitation);
 
   return (
     <View style={styles.container}>
@@ -158,7 +141,6 @@ const profile = () => {
         <Text style={{fontSize: 18, fontWeight: 'bold'}}>Invitation</Text>
         <Gap height={20} />
         <FlatList
-          extraData={refresh}
           keyExtractor={(a, i) => i + 'invitation'}
           data={invitationList}
           renderItem={({item, index}) => {
@@ -181,6 +163,7 @@ export default profile;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FBFAFF',
   },
   content: {
     paddingHorizontal: 20,
