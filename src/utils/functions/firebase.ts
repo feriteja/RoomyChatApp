@@ -302,6 +302,7 @@ const cancelPendingFriend = async ({targetUid}: {targetUid: string}) => {
       .delete();
     return 'deleted';
   } catch (error) {
+    console.log(error);
     return 'error';
   }
 };
@@ -422,7 +423,9 @@ const listPendingFriend = async () => {
     const listUID = data.docs.map(a => a.data());
 
     return listUID;
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const listUserRooms = async () => {

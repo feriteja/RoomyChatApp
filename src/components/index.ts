@@ -2,6 +2,7 @@ export {default as RoomItem} from './roomItem/roomItem';
 export {default as ModalMsgContent} from './modalMsgContent';
 export {default as Gap} from './gap/gap';
 export {default as CusLogFormInput} from './cusLogFormInput/cusLogFormInput';
+export {default as ChatMessage} from './chatMessage/chatMessage';
 export {default as FriendListItem} from './friendListItem/friendListItem';
 export {default as InvitationItem} from './invitationItem/invitationItem';
 export {default as FriendInviteItem} from './friendInviteItem/friendInviteItem';

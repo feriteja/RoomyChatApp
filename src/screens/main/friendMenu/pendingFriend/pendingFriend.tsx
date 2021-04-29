@@ -7,25 +7,20 @@ import {Gap, FriendRequestItem, FriendPendingtItem} from '@components';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 
 const requestingFriend = () => {
-  const [requestList, setRequestList] = useState<
+  const [pendingList, setPendingList] = useState<
     FirebaseFirestoreTypes.DocumentData[] | undefined
   >([]);
-  const [refresh, setRefresh] = useState(false);
 
   const navigation = useNavigation();
 
-  const cancleHandler = (idx: number) => {
-    setRequestList(a => {
-      const newArr = a;
-      newArr?.splice(idx, 1);
-      return newArr;
-    });
-    setRefresh(a => !a);
+  const cancleHandler = (targetUid: string) => {
+    const newArr = pendingList?.filter(user => user.uid != targetUid);
+    setPendingList(newArr);
   };
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      listPendingFriend().then(a => setRequestList(a));
+      listPendingFriend().then(a => setPendingList(a));
     });
 
     return unsubscribe;
@@ -35,7 +30,7 @@ const requestingFriend = () => {
     <View style={styles.container}>
       <View style={styles.header} />
       <View style={{}}>
-        {requestList?.length === 0 ? (
+        {pendingList?.length === 0 ? (
           <View
             style={{
               height: 100,
@@ -51,10 +46,9 @@ const requestingFriend = () => {
           </View>
         ) : (
           <FlatList
-            extraData={refresh}
             ItemSeparatorComponent={() => <Gap height={5} />}
             keyExtractor={(a, i) => i.toString()}
-            data={requestList}
+            data={pendingList}
             contentContainerStyle={{paddingBottom: 65}}
             renderItem={({item, index}) => (
               <FriendPendingtItem

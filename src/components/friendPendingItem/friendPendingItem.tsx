@@ -26,7 +26,7 @@ import useSWR from 'swr';
 interface props {
   item: {uid: string} | FirebaseFirestoreTypes.DocumentData;
   index: number;
-  cancleHandler: (a: number) => void;
+  cancleHandler: (targetUid: string) => void;
 }
 
 const {height, width} = Dimensions.get('screen');
@@ -56,14 +56,6 @@ const friendPendingItem: React.FC<props> = ({item, index, cancleHandler}) => {
       transform: [{translateX: tranX.value}],
     };
   });
-
-  const transition = (
-    <Transition.Sequence>
-      <Transition.Out type="scale" />
-      <Transition.Change interpolation="easeInOut" />
-      <Transition.In type="fade" />
-    </Transition.Sequence>
-  );
 
   return (
     <PanGestureHandler
@@ -110,9 +102,8 @@ const friendPendingItem: React.FC<props> = ({item, index, cancleHandler}) => {
           onPress={() => {
             cancelPendingFriend({targetUid: userInfo?.uid}).then(a => {
               if (a === 'deleted') {
-                cancleHandler(index);
+                cancleHandler(userInfo?.uid);
                 tranX.value = 0;
-                ref.current?.animateNextTransition();
               }
             });
           }}>

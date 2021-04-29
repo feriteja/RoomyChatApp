@@ -54,9 +54,9 @@ const index = () => {
 
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <TouchableOpacity onPress={() => navigation.navigate('searchRoom')}>
-              <IconMatCIcon
-                name="dots-horizontal"
-                size={25}
+              <IconFeather
+                name="search"
+                size={20}
                 color={'white'}
                 style={{
                   backgroundColor: 'rgba(200,200,200,0.6)',

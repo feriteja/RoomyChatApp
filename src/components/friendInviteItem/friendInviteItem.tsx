@@ -17,6 +17,7 @@ import Animated, {
 import IconAnt from 'react-native-vector-icons/AntDesign';
 import {getProfileInfo, roomInviteFriend} from '@firebaseFunc';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
+import useSWR from 'swr';
 
 interface props {
   item: any;
@@ -24,12 +25,9 @@ interface props {
   data: any;
 }
 
-const {height, width} = Dimensions.get('screen');
-
 const friendInviteItem: React.FC<props> = ({item, index, data}) => {
-  const [userInfo, setUserInfo] = useState<
-    FirebaseFirestoreTypes.DocumentData | undefined
-  >({});
+  const {data: userInfo} = useSWR(item.uid, key => getProfileInfo(key));
+
   const tranX = useSharedValue(0);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -38,56 +36,40 @@ const friendInviteItem: React.FC<props> = ({item, index, data}) => {
     };
   });
 
-  const transition = (
-    <Transition.Sequence>
-      <Transition.Out type="scale" />
-      <Transition.Change interpolation="easeInOut" />
-      <Transition.In type="fade" />
-    </Transition.Sequence>
-  );
-
-  useEffect(() => {
-    getProfileInfo({uid: item.uid}).then(a => setUserInfo(a));
-  }, []);
-
-  const ref = useRef<TransitioningView>(null);
-
   return (
-    <Transitioning.View ref={ref} transition={transition}>
-      <Animated.View style={[styles.container, animatedStyle]}>
-        <View style={styles.section1}>
-          <Image source={{uri: userInfo?.photoURL}} style={styles.imageAva} />
-          <View
-            style={{
-              marginLeft: 20,
-              alignSelf: 'stretch',
-              justifyContent: 'space-around',
-              paddingVertical: 15,
-            }}>
-            <Text
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              style={{fontWeight: 'bold', fontSize: 16}}>
-              {userInfo?.name || `MyName is ${index}`}
-            </Text>
-            <Text>{userInfo?.signature || 'none'}</Text>
-          </View>
-        </View>
-
-        <TouchableOpacity
-          onPress={() => {
-            roomInviteFriend({
-              idRoom: data.idRoom,
-              targetUid: item.uid,
-            }).then(() => Alert.alert('invited'));
+    <Animated.View style={[styles.container, animatedStyle]}>
+      <View style={styles.section1}>
+        <Image source={{uri: userInfo?.photoURL}} style={styles.imageAva} />
+        <View
+          style={{
+            marginLeft: 20,
+            alignSelf: 'stretch',
+            justifyContent: 'space-around',
+            paddingVertical: 15,
           }}>
-          <View style={styles.section2}>
-            <IconAnt name="adduser" size={25} />
-            <Text>Invite</Text>
-          </View>
-        </TouchableOpacity>
-      </Animated.View>
-    </Transitioning.View>
+          <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            style={{fontWeight: 'bold', fontSize: 16}}>
+            {userInfo?.name || `MyName is ${index}`}
+          </Text>
+          <Text>{userInfo?.signature || 'none'}</Text>
+        </View>
+      </View>
+
+      <TouchableOpacity
+        onPress={() => {
+          roomInviteFriend({
+            idRoom: data.idRoom,
+            targetUid: item.uid,
+          }).then(() => Alert.alert('invited'));
+        }}>
+        <View style={styles.section2}>
+          <IconAnt name="adduser" size={25} />
+          <Text>Invite</Text>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 
